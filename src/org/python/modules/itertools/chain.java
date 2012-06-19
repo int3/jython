@@ -56,29 +56,30 @@ public class chain extends PyObject {
     @ExposedMethod
     final void chain___init__(final PyObject[] args, String[] kwds) {
         ArgParser ap = new ArgParser("chain", args, kwds, "iterables");
+        ap.noKeywords();
 
         //ArgParser always returns a PyTuple - I wonder why we make it pass back a PyObject?
         PyTuple tuple = (PyTuple)ap.getList(0);
         chain___init__(tuple.getArray());
     }
 
-    private void chain___init__(PyObject[] iterables) {
-        final PyObject[] iterators = new PyObject[iterables.length];
-        for (int i = 0; i < iterables.length; i++) {
-            iterators[i] = iterables[i].__iter__();
-        }
+    private void chain___init__(final PyObject[] iterables) {
 
         iter = new itertools.ItertoolsIterator() {
+
             int iteratorIndex = 0;
+            PyObject currentIterator = new PyObject();
 
             public PyObject __iternext__() {
                 PyObject next = null;
-                for (; iteratorIndex < iterators.length; iteratorIndex++) {
-                    next = nextElement(iterators[iteratorIndex]);
+                do {
+                    next = nextElement(currentIterator);
                     if (next != null) {
                         break;
                     }
                 }
+                while (iteratorIndex < iterables.length &&
+                       (currentIterator = iterables[iteratorIndex++].__iter__()) != null);
                 return next;
             }
 

@@ -83,6 +83,7 @@ public class itertools implements ClassDictInit {
         dict.__setitem__("__name__", new PyString("itertools"));
         dict.__setitem__("__doc__", __doc__);
         dict.__setitem__("chain", chain.TYPE);
+        dict.__setitem__("cycle", cycle.TYPE);
         dict.__setitem__("imap", imap.TYPE);
         dict.__setitem__("ifilter", ifilter.TYPE);
         dict.__setitem__("ifilterfalse", ifilterfalse.TYPE);
@@ -142,48 +143,6 @@ public class itertools implements ClassDictInit {
         return itertools.count(0);
     }
 
-
-    public static PyString __doc__cycle = new PyString(
-            "cycle(iterable) --> cycle object\n\nReturn elements from the iterable "
-                    + "until itis exhausted.\nThen repeat the sequence indefinitely.");
-
-    /**
-     * Returns an iterator that iterates over an iterable, saving the values for each iteration.
-     * When the iterable is exhausted continues to iterate over the saved values indefinitely.
-     */
-    public static PyIterator cycle(final PyObject sequence) {
-        return new ItertoolsIterator() {
-            List<PyObject> saved = new ArrayList<PyObject>();
-            int counter = 0;
-            PyObject iter = sequence.__iter__();
-
-            boolean save = true;
-
-            public PyObject __iternext__() {
-                if (save) {
-                    PyObject obj = nextElement(iter);
-                    if (obj != null) {
-                        saved.add(obj);
-                        return obj;
-                    } else {
-                        save = false;
-                    }
-                }
-                if (saved.size() == 0) {
-                    return null;
-                }
-                
-                // pick element from saved List
-                if (counter >= saved.size()) {
-                    // start over again
-                    counter = 0;
-                }
-                return saved.get(counter++);
-            }
-
-        };
-    }
-    
     public static PyString __doc__repeat = new PyString(
             "'repeat(element [,times]) -> create an iterator which returns the element\n"
                     + "for the specified number of times.  If not specified, returns the element\nendlessly.");
